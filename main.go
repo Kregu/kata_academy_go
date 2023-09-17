@@ -9,7 +9,7 @@ import (
 )
 
 func romesToArabic(romNumber string) int {
-	switch romNumber {
+	switch strings.ToUpper(romNumber) {
 	case "I":
 		return 1
 	case "II":
@@ -40,13 +40,12 @@ func arabicToRomes(number int) string {
 	romes := [11]string{"I", "II", "III", "IV", "V", "IX", "X", "XL", "L", "XC", "C"}
 	arabic := [11]int{1, 2, 3, 4, 5, 9, 10, 40, 50, 90, 100}
 
-	num := number
 	result := strings.Builder{}
 
-	for num < 0 {
+	for number > 0 {
 		for i := 10; i >= 0; i-- {
-			if arabic[i] <= num {
-				num -= arabic[i]
+			if arabic[i] <= number {
+				number -= arabic[i]
 				result.WriteString(romes[i])
 				i++
 			}
@@ -72,22 +71,34 @@ func main() {
 func calc(str string) string {
 	args := strings.Split(str, " ")
 
-	// var value1, value2 int
-	// is_romes := false
+	isNum1romes := false
+	isNum2romes := false
 
 	if len(args) != 3 {
-		err := "Please provide 3 input arguments, example: 2 + 3"
+		err := "Requires two operands and one operator (+, -, /, *). Example: 1 + 2"
 		panic(err)
 	}
 
-	num1, err := strconv.Atoi(args[0])
-	if err != nil {
-		panic(err)
+	num1, err1 := strconv.Atoi(args[0])
+	if err1 != nil {
+		num1 = romesToArabic(args[0])
+		isNum1romes = true
 	}
-	num2, err := strconv.Atoi(args[2])
-	if err != nil {
-		panic(err)
+
+	num2, err2 := strconv.Atoi(args[2])
+	if err2 != nil {
+		num2 = romesToArabic(args[2])
+		isNum2romes = true
 	}
+
+	if isNum1romes != isNum2romes {
+		panic("Please use only arabic or only romes numbers")
+	}
+
+	if num1 < 1 || num2 < 1 || num1 > 10 || num2 > 10 {
+		panic("Arguments must be: 1..10")
+	}
+
 	if num2 == 0 && (args[1] == "/" || args[1] == "%") {
 		err := "Division by zero is impossible!"
 		panic(err)
@@ -103,7 +114,18 @@ func calc(str string) string {
 	case "/":
 		res = num1 / num2
 	default:
-		fmt.Printf("Don't know operation %s\n", args[1])
+		err := fmt.Sprintf("Don't know operation %s\n", args[1])
+		panic(err)
 	}
+
+	if isNum1romes {
+		if res > 0 {
+			return arabicToRomes(res)
+		} else {
+			err := fmt.Sprintf("Roman numerals cannot be less than one: %d", res)
+			panic(err)
+		}
+	}
+
 	return strconv.Itoa(res)
 }
