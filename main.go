@@ -92,7 +92,7 @@ func calc(str string) string {
 	}
 
 	if isNum1romes != isNum2romes {
-		panic("Please use only arabic or only romes numbers")
+		panic("Please use only arabic or only roman numbers")
 	}
 
 	if num1 < 1 || num2 < 1 || num1 > 10 || num2 > 10 {
