@@ -8,31 +8,30 @@ import (
 	"strings"
 )
 
-func romesToArabic(romNumber string) int {
+func romesToArabic(romNumber string) (int, error) {
 	switch strings.ToUpper(romNumber) {
 	case "I":
-		return 1
+		return 1, nil
 	case "II":
-		return 2
+		return 2, nil
 	case "III":
-		return 3
+		return 3, nil
 	case "IV":
-		return 4
+		return 4, nil
 	case "V":
-		return 5
+		return 5, nil
 	case "VI":
-		return 6
+		return 6, nil
 	case "VII":
-		return 7
+		return 7, nil
 	case "VIII":
-		return 8
+		return 8, nil
 	case "IX":
-		return 9
+		return 9, nil
 	case "X":
-		return 10
+		return 10, nil
 	default:
-		err := fmt.Sprintf("Unexptcted valut: %s\n", romNumber)
-		panic(err)
+		return 0, fmt.Errorf("unexptcted value: %s", romNumber)
 	}
 }
 
@@ -54,54 +53,35 @@ func arabicToRomes(number int) string {
 	return result.String()
 }
 
-func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	str := ""
-	fmt.Println("Input:")
-	if scanner.Scan() {
-		str = scanner.Text()
-	} else {
-		panic(scanner.Err())
-	}
-	fmt.Println("Output:")
-	fmt.Println(calc(str))
-
-}
-
-func calc(str string) string {
+func calc(str string) (string, error) {
 	args := strings.Split(str, " ")
 
-	isNum1romes := false
-	isNum2romes := false
-
 	if len(args) != 3 {
-		err := "Requires two operands and one operator (+, -, /, *). Example: 1 + 2"
-		panic(err)
+		return "", fmt.Errorf("requires two operands and one operator (+, -, /, *). Exam: 1 + 2")
 	}
 
 	num1, err1 := strconv.Atoi(args[0])
 	if err1 != nil {
-		num1 = romesToArabic(args[0])
-		isNum1romes = true
+		num1, err1 = romesToArabic(args[0])
+		if err1 != nil {
+			return "", err1
+		}
 	}
 
 	num2, err2 := strconv.Atoi(args[2])
 	if err2 != nil {
-		num2 = romesToArabic(args[2])
-		isNum2romes = true
-	}
-
-	if isNum1romes != isNum2romes {
-		panic("Please use only arabic or only roman numbers")
+		num2, err2 = romesToArabic(args[2])
+		if err2 != nil {
+			return "", err2
+		}
 	}
 
 	if num1 < 1 || num2 < 1 || num1 > 10 || num2 > 10 {
-		panic("Arguments must be: 1..10")
+		return "", fmt.Errorf("arguments must be: 1..10")
 	}
 
 	if num2 == 0 && (args[1] == "/" || args[1] == "%") {
-		err := "Division by zero is impossible!"
-		panic(err)
+		return "", fmt.Errorf("division by zero is impossible!")
 	}
 	res := 0
 	switch args[1] {
@@ -114,18 +94,30 @@ func calc(str string) string {
 	case "/":
 		res = num1 / num2
 	default:
-		err := fmt.Sprintf("Don't know operation %s\n", args[1])
-		panic(err)
+		return "", fmt.Errorf("don't know operation %s", args[1])
 	}
 
-	if isNum1romes {
-		if res > 0 {
-			return arabicToRomes(res)
-		} else {
-			err := fmt.Sprintf("Roman numerals cannot be less than one: %d", res)
-			panic(err)
-		}
+	if res > 0 {
+		return arabicToRomes(res), nil
 	}
 
-	return strconv.Itoa(res)
+	return strconv.Itoa(res), nil
+}
+
+func main() {
+	scanner := bufio.NewScanner(os.Stdin)
+	str := ""
+	fmt.Println("Input:")
+	if scanner.Scan() {
+		str = scanner.Text()
+	} else {
+		panic(scanner.Err())
+	}
+	fmt.Println("Output:")
+	res, err := calc(str)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+	}
 }
